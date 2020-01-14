@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Evaluate expression</title>
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        #errorText {
+            color: red;
+        }
+    </style>
 </head>
 <body>
 <h3>Write expression below</h3>
@@ -12,7 +21,7 @@
         <button onclick="sendEval();">Send</button>
     </p>
     <p>
-    <h3>result: <span id="resultText"> </span></h3>
+    <h3>result: <span id="resultText"> </span><span id="errorText"></span></h3>
     </p>
 
 </div>
@@ -20,6 +29,7 @@
     function sendEval() {
         const evalText = document.getElementById("evalText").value;
         const resultText = document.getElementById("resultText");
+        const errorText = document.getElementById("errorText");
 
         fetch("http://localhost:8080/eval", {
             method: 'POST',
@@ -38,8 +48,10 @@
             console.log(json);
             if (json.status === "ok") {
                 resultText.innerText = json.result;
+                errorText.innerText = "";
             } else {
-                resultText.innerText = json.message;
+                resultText.innerText = "";
+                errorText.innerText = json.message;
             }
         });
     }
