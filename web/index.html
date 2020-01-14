@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Evaluate expression</title>
+</head>
+<body>
+<h3>Write expression below</h3>
+<div>
+    <p>
+        <label for="evalText"><input type="text" name="expression" id="evalText"></label>
+        <button onclick="sendEval();">Send</button>
+    </p>
+    <p>
+    <h3>result: <span id="resultText"> </span></h3>
+    </p>
+
+</div>
+<script>
+    function sendEval() {
+        const evalText = document.getElementById("evalText").value;
+        const resultText = document.getElementById("resultText");
+
+        fetch("http://localhost:8080/eval", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: "expression=" + evalText
+        })
+            .then(response => {
+                if (!response.ok) {
+                    console.log(response.statusText);
+                } else {
+                    return response.json();
+                }
+            }).then(json => {
+            console.log(json);
+            if (json.status === "ok") {
+                resultText.innerText = json.result;
+            } else {
+                resultText.innerText = json.message;
+            }
+        });
+    }
+
+</script>
+</body>
+</html>
