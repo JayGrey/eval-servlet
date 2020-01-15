@@ -8,12 +8,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public interface WebUtils {
     static String getLinesFromRequestBody(HttpServletRequest request) {
+        if (request == null) {
+            return "";
+        }
+
         StringBuilder buffer = new StringBuilder();
         try {
             final BufferedReader reader = request.getReader();
@@ -27,23 +32,32 @@ public interface WebUtils {
         return buffer.toString();
     }
 
-    static List<String> getLinesFromFilePart(HttpServletRequest request)
-            throws IOException, ServletException {
-        final Part filePart = request.getPart("file");
-
-        final BufferedReader reader = new BufferedReader(
-                new InputStreamReader(filePart.getInputStream()));
-
-        List<String> result = new ArrayList<>();
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.trim().length() > 0) {
-                result.add(line);
-            }
+    static List<String> getLinesFromFilePart(HttpServletRequest request) {
+        if (request == null) {
+            return Collections.emptyList();
         }
 
-        return result;
+        try {
+            final Part filePart = request.getPart("file");
+
+            final BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(filePart.getInputStream()));
+
+            List<String> result = new ArrayList<>();
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().length() > 0) {
+                    result.add(line);
+                }
+            }
+            return result;
+
+        } catch (IOException | ServletException e) {
+            e.printStackTrace(System.err);
+        }
+
+        return Collections.emptyList();
     }
 
     static void sendJson(HttpServletResponse response, String data) {
@@ -53,23 +67,17 @@ public interface WebUtils {
             response.setContentType("application/json");
             response.getWriter().print(data);
         } catch (IOException e) {
+            e.printStackTrace(System.err);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 
     static <T> void sendJsonArray(HttpServletResponse response, Function<T, String> mapper,
                                   List<T> array) {
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setCharacterEncoding("utf-8");
-        response.setContentType("application/json");
-        try {
-            response.getWriter().print(toJsonArray(mapper, array));
-        } catch (IOException e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
+        sendJson(response, toJsonArray(mapper, array));
     }
 
-    static String toJson(String key, String value, String... entries) {
+    static String toJsonObject(String key, String value, String... entries) {
         StringBuilder buffer = new StringBuilder();
         buffer.append(String.format("\"%s\":\"%s\"", key, value));
         if (entries.length % 2 == 0) {

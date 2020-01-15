@@ -20,7 +20,7 @@ public class EvalServlet extends HttpServlet {
         if (elements.length < 2) {
 
             WebUtils.sendJson(response,
-                    WebUtils.toJson(
+                    WebUtils.toJsonObject(
                             "status", "error",
                             "message", "request error"
                     )
@@ -30,7 +30,7 @@ public class EvalServlet extends HttpServlet {
                 final double result = Evaluate.process(elements[1]);
 
                 WebUtils.sendJson(response,
-                        WebUtils.toJson(
+                        WebUtils.toJsonObject(
                                 "status", "ok",
                                 "result", Double.toString(result)
                         )
@@ -38,9 +38,9 @@ public class EvalServlet extends HttpServlet {
 
             } catch (EvaluateException e) {
                 WebUtils.sendJson(response,
-                        WebUtils.toJson(
+                        WebUtils.toJsonObject(
                                 "status", "error",
-                                "message", "error processing expression"
+                                "message", "error evaluating expression"
                         )
                 );
             }

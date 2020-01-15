@@ -1,8 +1,6 @@
-package te.homework;
+package te.homework.logic;
 
 import org.junit.jupiter.api.Test;
-import te.homework.logic.Evaluate;
-import te.homework.logic.EvaluateException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
