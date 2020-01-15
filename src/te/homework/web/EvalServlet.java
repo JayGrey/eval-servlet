@@ -8,33 +8,41 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
 
 @WebServlet(name = "evalServlet", urlPatterns = {"/eval"})
 public class EvalServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-        String payload = WebUtils.getPayload(request);
+        String payload = WebUtils.getLinesFromRequestBody(request);
         final String[] elements = payload.split("=");
 
         if (elements.length < 2) {
-            final HashMap<String, String> map = new HashMap<>();
-            map.put("status", "error");
-            map.put("message", "request error");
-            WebUtils.sendJson(response, map);
+
+            WebUtils.sendJson(response,
+                    WebUtils.toJson(
+                            "status", "error",
+                            "message", "request error"
+                    )
+            );
         } else {
             try {
                 final double result = Evaluate.process(elements[1]);
-                final HashMap<String, String> map = new HashMap<>();
-                map.put("status", "ok");
-                map.put("result", Double.toString(result));
-                WebUtils.sendJson(response, map);
+
+                WebUtils.sendJson(response,
+                        WebUtils.toJson(
+                                "status", "ok",
+                                "result", Double.toString(result)
+                        )
+                );
+
             } catch (EvaluateException e) {
-                final HashMap<String, String> map = new HashMap<>();
-                map.put("status", "error");
-                map.put("message", "error processing expression");
-                WebUtils.sendJson(response, map);
+                WebUtils.sendJson(response,
+                        WebUtils.toJson(
+                                "status", "error",
+                                "message", "error processing expression"
+                        )
+                );
             }
         }
     }

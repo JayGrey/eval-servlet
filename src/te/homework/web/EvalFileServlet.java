@@ -13,57 +13,56 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @WebServlet(name = "evalFileServlet", urlPatterns = {"/eval-file"})
 @MultipartConfig
 public class EvalFileServlet extends HttpServlet {
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse resp) {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
 
         try {
             List<String> lines = WebUtils.getLinesFromFilePart(request);
-            System.out.println(lines);
 
             List<EvalData> result = new ArrayList<>();
 
             for (String line : lines) {
                 try {
                     final String output = Double.toString(Evaluate.process(line));
-                    result.add(EvalData.of(line, output));
+                    result.add(EvalData.of(line, output, false));
                 } catch (EvaluateException e) {
-                    result.add(EvalData.of(line, "error evaluating expression"));
+                    result.add(EvalData.of(line, "error evaluating expression", true));
                 }
             }
 
-            resp.setStatus(HttpServletResponse.SC_OK);
-            resp.getWriter().print(result.stream()
-                    .map(this::toJsonObject)
-                    .collect(Collectors.joining(", ", "[", "]"))
-            );
+            WebUtils.sendJsonArray(response, this::toJsonObject, result);
 
         } catch (IOException | ServletException e) {
             e.printStackTrace(System.err);
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 
     private String toJsonObject(EvalData evalData) {
-        return String.format("{\"input\": \"%s\", \"output\": \"%s\"}",
-                evalData.input, evalData.output);
+        return WebUtils.toJson(
+                "status", evalData.error ? "error" : "ok",
+                "input", evalData.input,
+                "output", evalData.output
+        );
     }
 
     private static class EvalData {
         final String input;
         final String output;
+        final boolean error;
 
-        public EvalData(String input, String output) {
+        public EvalData(String input, String output, boolean error) {
             this.input = input;
             this.output = output;
+            this.error = error;
         }
 
-        private static EvalData of(String input, String output) {
-            return new EvalData(input, output);
+        private static EvalData of(String input, String output, boolean error) {
+            return new EvalData(input, output, error);
         }
     }
 }
