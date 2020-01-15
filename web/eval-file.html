@@ -4,17 +4,50 @@
     <meta charset="UTF-8">
     <title>Evaluate expressions in file</title>
 </head>
+<style>
+    body {
+        padding: 20px;
+    }
+
+    .input {
+        margin-top: 10px;
+    }
+
+    .error {
+        color: red;
+    }
+
+    table {
+        margin-top: 20px;
+    }
+
+    table, th, td {
+        border: 2px solid grey;
+        border-collapse: collapse;
+    }
+
+    th {
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    td {
+        min-width: 300px;
+        padding-left: 10px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+</style>
 <body>
+<h3>Choose file to evaluate expressions or return <a href="/">back</a></h3>
 <div>
     <p class="input">
         <input type="file" name="file" id="fileInput">
         <button onclick="sendFile()">Send</button>
     </p>
-    <p class="result">
-    <table id="resultTable">
 
-    </table>
-    </p>
+    <table id="resultTable"></table>
 
 </div>
 
@@ -23,7 +56,7 @@
 
     function sendFile() {
         if (fileInput.files.length === 0) {
-            console.error("file not selected")
+            console.error("file not selected");
             return;
         }
 
@@ -64,6 +97,9 @@
             tr.appendChild(tdInput);
 
             const tdOutput = document.createElement("td");
+            if (element.status === "error") {
+                tdOutput.setAttribute("class", "error");
+            }
             tdOutput.appendChild(document.createTextNode(element.output));
             tr.appendChild(tdOutput);
 
